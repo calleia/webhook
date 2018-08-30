@@ -42,25 +42,24 @@ class RequestHandler(BaseHTTPRequestHandler):
         return
 
 
-class WebhookServer():
+class WebhookServer(HTTPServer):
 
     def __init__(self, port=80, address="0.0.0.0"):
-
         server_address = (address, port)
 
-        self.server = HTTPServer(server_address, RequestHandler)
+        super(WebhookServer, self).__init__(server_address, RequestHandler)
 
     def start(self):
         print(time.asctime(), "Server started @ %s:%s"
-              % self.server.server_address)
+              % self.server_address)
 
         try:
-            self.server.serve_forever()
+            self.serve_forever()
         except KeyboardInterrupt:
-            self.server.server_close()
+            self.server_close()
 
         print(time.asctime(), "Server stopped @ %s:%s"
-              % self.server.server_address)
+              % self.server_address)
 
 
 if __name__ == "__main__":
