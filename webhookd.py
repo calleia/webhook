@@ -14,7 +14,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         except:
             print("There was a problem parsing JSON.")
         else:
-            print(parsed_json)
+            if self.server.callback:
+                self.server.callback(parsed_json)
+            else:
+                print(parsed_json)
 
     def do_HEAD(self):
         self.send_response(200)
@@ -44,10 +47,12 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 class WebhookServer(HTTPServer):
 
-    def __init__(self, port=80, address="0.0.0.0"):
+    def __init__(self, callback=None, port=80, address="0.0.0.0"):
         server_address = (address, port)
 
         super(WebhookServer, self).__init__(server_address, RequestHandler)
+
+        self.callback = callback
 
     def start(self):
         print(time.asctime(), "Server started @ %s:%s"
