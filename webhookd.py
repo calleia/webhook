@@ -2,6 +2,7 @@
 
 import json
 import time
+from argparse import ArgumentParser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 
@@ -68,5 +69,22 @@ class WebhookServer(HTTPServer):
 
 
 if __name__ == "__main__":
-    server = WebhookServer()
+    parser = ArgumentParser()
+
+    parser.add_argument("-a", "--address", action="store", dest="address",
+                        help="specify address")
+    parser.add_argument("-p", "--port", action="store", dest="port", type=int,
+                        help="specify which port to listen")
+
+    args = parser.parse_args()
+
+    if args.address and args.port:
+        server = WebhookServer(address=args.address, port=args.port)
+    elif args.address:
+        server = WebhookServer(address=args.address)
+    elif args.port:
+        server = WebhookServer(port=args.port)
+    else:
+        server = WebhookServer()
+
     server.start()
