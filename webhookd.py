@@ -2,6 +2,7 @@
 
 import json
 import time
+import ssl
 from argparse import ArgumentParser
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -48,12 +49,15 @@ class RequestHandler(BaseHTTPRequestHandler):
 
 class WebhookServer(HTTPServer):
 
-    def __init__(self, callback=None, port=80, address="0.0.0.0"):
+    def __init__(self, callback=None, port=80, address="0.0.0.0", certfile=None, keyfile=None):
         server_address = (address, port)
 
         super(WebhookServer, self).__init__(server_address, RequestHandler)
 
         self.callback = callback
+
+        if certfile:
+            self.socket = ssl.wrap_socket(self.socket, certfile=certfile, keyfile=keyfile, server_side=True)
 
     def start(self):
         print(time.asctime(), "Server started @ %s:%s"
@@ -73,18 +77,27 @@ if __name__ == "__main__":
 
     parser.add_argument("-a", "--address", action="store", dest="address",
                         help="specify address")
+    
     parser.add_argument("-p", "--port", action="store", dest="port", type=int,
                         help="specify which port to listen")
 
+    parser.add_argument("-c", "--certfile", action="store", dest="certfile",
+                        help="certfile path")
+
+    parser.add_argument("-k", "--keyfile", action="store", dest="keyfile",
+                        help="keyfile path")
+
     args = parser.parse_args()
 
+    print(args)
+
     if args.address and args.port:
-        server = WebhookServer(address=args.address, port=args.port)
+        server = WebhookServer(address=args.address, port=args.port, certfile=args.certfile, keyfile=args.keyfile)
     elif args.address:
-        server = WebhookServer(address=args.address)
+        server = WebhookServer(address=args.address, certfile=args.certfile, keyfile=args.keyfile)
     elif args.port:
-        server = WebhookServer(port=args.port)
+        server = WebhookServer(port=args.port, certfile=args.certfile, keyfile=args.keyfile)
     else:
-        server = WebhookServer()
+        server = WebhookServer(certfile=args.certfile, keyfile=args.keyfile)
 
     server.start()
